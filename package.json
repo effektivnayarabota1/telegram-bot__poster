@@ -10,5 +10,9 @@
   },
   "dependencies": {
     "telegraf": "^4.15.3"
+  },
+  "scripts": {
+    "dev": "bun run --watch index.js"
   }
 }
+
