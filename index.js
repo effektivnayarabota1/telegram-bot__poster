@@ -1,3 +1,4 @@
+import { server } from "./web-app";
 import { bot } from "./telegram-bot";
 
 await bot.launch();
