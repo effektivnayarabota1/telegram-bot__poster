@@ -1,6 +1,7 @@
 import { Telegraf, Markup } from "telegraf";
-const { message } = require("telegraf/filters");
+import { message } from "telegraf/filters";
 
+import ImageContoller from "../controller/image.controller";
 import template from "../telegram-bot__template-messages";
 
 export const bot = new Telegraf(process.env.BOT_TOKEN);
@@ -24,14 +25,20 @@ bot.start(async (ctx) => {
 
 bot.on("message", async (ctx) => {
   const message__text = ctx.message?.text;
-  // const regex = new RegExp(`/#\\w\\w\\w\\w\\w\\w`);
   const regex = /#\w\w\w\w\w\w/;
+
   if (ctx.webAppData || regex.test(message__text)) {
     let hex;
     if (ctx.webAppData?.data) hex = ctx.webAppData.data.text();
     else hex = message__text.match(regex)[0];
+    // await ImageContoller.getPreview({ color: hex });
     await ctx.reply(hex);
+
+    await ctx.replyWithPhoto({
+      source: await ImageContoller.getPreview__color(hex),
+    });
   } else {
+    await ImageContoller.get_Preview({ text: message__text });
     await ctx.reply("message");
   }
 });
