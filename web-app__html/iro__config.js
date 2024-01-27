@@ -14,9 +14,11 @@ var colorPicker = new iro.ColorPicker("#picker", {
   ],
 });
 
+export let hex;
+
 colorPicker.on("color:change", function (color) {
   let text_color = "#ffffff";
-  const hex = color.hexString;
+  hex = color.hexString;
   const value = color.value;
 
   if (value >= 50) text_color = "#000000";

@@ -22,12 +22,27 @@ bot.start(async (ctx) => {
   );
 });
 
+bot.on("message", async (ctx) => {
+  const message__text = ctx.message?.text;
+  // const regex = new RegExp(`/#\\w\\w\\w\\w\\w\\w`);
+  const regex = /#\w\w\w\w\w\w/;
+  if (ctx.webAppData || regex.test(message__text)) {
+    let hex;
+    if (ctx.webAppData?.data) hex = ctx.webAppData.data.text();
+    else hex = message__text.match(regex)[0];
+    await ctx.reply(hex);
+  } else {
+    await ctx.reply("message");
+  }
+});
+
 bot.on(
   message("web_app_data", async (ctx) => {
+    ctx.reply("data");
+    console.log("getData");
+    console.log(ctx);
     // assuming sendData was called with a JSON string
-    const data = ctx.webAppData.data.json();
-    // or if sendData was called with plaintext
-    const text = ctx.webAppData.data.text();
+
     console.log(data);
     console.log(text);
   })
