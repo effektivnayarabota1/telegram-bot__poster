@@ -31,8 +31,7 @@ bot.on("message", async (ctx) => {
     let hex;
     if (ctx.webAppData?.data) hex = ctx.webAppData.data.text();
     else hex = message__text.match(regex)[0];
-    // await ImageContoller.getPreview({ color: hex });
-    await ctx.reply(hex);
+    await ctx.replyWithMarkdownV2(`\`${hex}\``);
 
     await ctx.replyWithPhoto({
       source: await ImageContoller.getPreview__color(hex),
@@ -42,18 +41,6 @@ bot.on("message", async (ctx) => {
     await ctx.reply("message");
   }
 });
-
-bot.on(
-  message("web_app_data", async (ctx) => {
-    ctx.reply("data");
-    console.log("getData");
-    console.log(ctx);
-    // assuming sendData was called with a JSON string
-
-    console.log(data);
-    console.log(text);
-  })
-);
 
 bot.help(async (ctx) => {
   const message = await template("command__help");
