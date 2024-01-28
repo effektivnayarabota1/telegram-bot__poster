@@ -29,16 +29,23 @@ bot.on("message", async (ctx) => {
   const regex = /#\w\w\w\w\w\w/;
 
   if (ctx.webAppData || regex.test(message__text)) {
+    // TODO Сохранить в информацию в память сессии
     let hex;
     if (ctx.webAppData?.data) hex = ctx.webAppData.data.text();
     else hex = message__text.match(regex)[0];
+
     await ctx.replyWithMarkdownV2(`\`${hex}\``);
 
     await ctx.replyWithPhoto({
       source: await ImageContoller.getPreview__color(hex),
     });
   } else {
-    await ImageContoller.get_Preview({ text: message__text });
+    // TODO Сохранить в информацию в память сессии
+    await ctx.replyWithMarkdownV2(`\`${message__text}\``);
+
+    await ctx.replyWithPhoto({
+      source: await ImageContoller.getPreview__text(message__text),
+    });
     await ctx.reply("message");
   }
 });

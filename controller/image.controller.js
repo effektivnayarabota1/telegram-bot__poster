@@ -2,10 +2,8 @@ import sharp from "sharp";
 
 export default class ImageContoller {
   static getHeight__aspectRatio(width, aspectRatio) {
-    console.log(width);
-    console.log(aspectRatio);
     const height = Number.parseFloat(width / aspectRatio).toFixed(0);
-    return Number(height);
+    return height;
   }
 
   static async getMetadata(path) {
@@ -15,12 +13,22 @@ export default class ImageContoller {
 
   static async getWidth(path) {
     if (!this.image__metadata) await this.getMetadata(path);
-    return this.image__metadata.width;
+    return Number(this.image__metadata.width);
   }
 
   static async getHeight(path) {
     if (!this.image__metadata) await this.getMetadata(path);
-    return this.image__metadata.height;
+    return Number(this.image__metadata.height);
+  }
+
+  static getTextPostion__left(width) {
+    const left = Number.parseFloat((width / 3) * 2).toFixed(0);
+    return Number(left);
+  }
+
+  static getTextPostion__top(height) {
+    const top = Number.parseFloat((height / 3) * 2).toFixed(0);
+    return Number(top);
   }
 
   static async getPreview({ color, text }) {
@@ -34,7 +42,7 @@ export default class ImageContoller {
     const image__width = await this.getWidth(image__path);
     const image__height = await this.getHeight(image__path);
 
-    const aspectRatio = image__width / image__height;
+    // const aspectRatio = image__width / image__height;
 
     const buffer = await sharp(image__path)
       .composite([
@@ -51,16 +59,33 @@ export default class ImageContoller {
           blend: "colour-dodge",
         },
       ])
-      .resize(1080, this.getHeight__aspectRatio(image__width, aspectRatio), {
-        fit: "inside",
-      })
-      // .extend({
-      //   top: 284,
-      //   bottom: 284,
-      //   left: 284,
-      //   right: 284,
-      //   extendWith: "repeat",
-      // })
+      .webp()
+      .toBuffer();
+
+    return buffer;
+  }
+
+  static async getPreview__text(text) {
+    const image__path = "./static/lepestochek__raster_72-ppt.png";
+
+    const image__width = await this.getWidth(image__path);
+    const image__height = await this.getHeight(image__path);
+
+    const text__position_left = this.getTextPostion__left(image__width);
+    const text__position_top = this.getTextPostion__top(image__height);
+
+    const buffer = await sharp(image__path)
+      .composite([
+        {
+          input: {
+            text: {
+              text: text,
+            },
+          },
+          left: text__position_left,
+          top: text__position_top,
+        },
+      ])
       .webp()
       .toBuffer();
 
