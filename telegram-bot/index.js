@@ -16,8 +16,9 @@ bot.start(async (ctx) => {
     {
       caption: "Окей, эту графику мы будем красить.",
       ...Markup.keyboard([
-        Markup.button.webApp("Цвет", process.env.WEB_APP_URL),
-        "Текст",
+        ["EMOJI (´｡• ᵕ •｡`)", "❌ Удалить текст"],
+        [Markup.button.webApp("♦ Изменить цвет", process.env.WEB_APP_URL)],
+        ["♨ Render!"],
       ]),
     }
   );
