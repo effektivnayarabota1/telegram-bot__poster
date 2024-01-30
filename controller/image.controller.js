@@ -6,45 +6,45 @@ import ImageUtils from "./image.controller.utils";
 const path__font = "RobotoCondensed-VariableFont_wght.ttf";
 
 export default class ImageContoller {
-  static async getPreview(username, { color, text }) {
-    console.log(username, color, text);
-    let buffer__result, buffer__background, buffer__text;
+  static async getPreview(username, { color = "#ffffff", text = "(^=◕ᴥ◕=^)" }) {
+    const layer__background = await this.getImage({});
 
-    if (color) {
-      buffer__background = await this.getImageBuffer__color({ color });
-    } else {
-      buffer__background = await this.getImage({});
-    }
-
-    buffer__result = sharp(buffer__background);
-
-    buffer__result = await this.getImageBuffer__text(buffer__result, {
-      username,
+    const layer__color = await this.getLayerBuffer__color(layer__background, {
+      color,
+    });
+    const layer__text = await this.getLayerBuffer__text(layer__background, {
       text,
     });
+    const layer__autograph = await this.getLayerBuffer__autograph(
+      layer__background,
+      { username }
+    );
 
-    return await buffer__result.webp().toBuffer();
+    return await sharp(layer__background)
+      // .composite([layer__color, layer__text, layer__autograph])
+      .composite([layer__text, layer__autograph, layer__color])
+      .webp()
+      .toBuffer();
   }
 
   static async getImage({ dpi = 72, bleed__mm = 0 }) {
     const image__path = ImageUtils.getImagePath(dpi, bleed__mm);
-
     const buffer = await sharp(image__path).png().toBuffer();
-
     return buffer;
   }
 
-  static async createBlendLayer({
-    image__width,
-    image__height,
-    color,
-    dpi = 72,
-    bleed__mm = 0,
-  }) {
+  static async getLayerBuffer__color(
+    buffer,
+    { color, dpi = 72, bleed__mm = 0 }
+  ) {
+    const { width: image__width, height: image__height } =
+      await ImageUtils.getMetadata(buffer);
+
     const bleed__px = ImageUtils.getBleed__px(dpi, bleed__mm);
     const padding__px = ImageUtils.getPadding__px(dpi);
 
-    return await sharp({
+    const colorLayer = {};
+    colorLayer.buffer = await sharp({
       create: {
         width: image__width + bleed__px - padding__px,
         height: image__height + bleed__px - padding__px,
@@ -54,47 +54,33 @@ export default class ImageContoller {
     })
       .png()
       .toBuffer();
+
+    return {
+      input: colorLayer.buffer,
+      gravity: "southwest",
+      blend: "colour-dodge",
+    };
   }
 
-  static async getImageBuffer__text(buffer, { text, username, dpi = 72 }) {
+  static async getLayerBuffer__autograph(
+    buffer,
+    { username, dpi = 72, bleed__mm = 0 }
+  ) {
     if (!username) throw new Error("username not found");
+
+    const date__now_ru = ImageUtils.getDate();
+    const text = `@${username}    ${date__now_ru}`;
 
     const {
       buffer: autographLayer__buffer,
       width: autographLayer__width,
       height: autographLayer__height,
-    } = await this.getLayerBuffer__autograph(username);
-
-    const autographLayer = new Layer({
-      buffer: autographLayer__buffer,
-      width: autographLayer__width,
-      height: autographLayer__height,
-      top_center__mm: 72,
-      left_center__mm: 54,
-      dpi,
-    });
-
-    buffer.composite([
-      {
-        input: autographLayer.buffer,
-        left: autographLayer.left,
-        top: autographLayer.top,
-      },
-    ]);
-
-    return buffer;
-  }
-
-  static async getLayerBuffer__autograph(username) {
-    const date__now_ru = ImageUtils.getDate();
-    const text = `@${username}    ${date__now_ru}`;
-
-    const layer__autograph = await sharp({
+    } = await sharp({
       text: {
         // text,
-        text: `<span foreground="gray">${text}</span>`,
+        text: `<span foreground="#a3a3a3">${text}</span>`,
         channels: 3,
-        font: "RobotoCondensed bold italic",
+        font: "RobotoCondensed light italic",
         fontfile: path__font,
         align: "left",
         dpi: 108,
@@ -113,23 +99,41 @@ export default class ImageContoller {
         };
       });
 
-    return layer__autograph;
+    const autographLayer = new Layer({
+      buffer: autographLayer__buffer,
+      width: autographLayer__width,
+      height: autographLayer__height,
+      top_center__mm: 72,
+      left_center__mm: 54,
+      dpi,
+    });
+
+    return {
+      input: autographLayer.buffer,
+      left: autographLayer.left,
+      top: autographLayer.top,
+    };
   }
 
-  static async getLayerBuffer__text(text, dpi) {
-    const textLayer__width = ImageUtils.cvt__mm_px(120, dpi);
-    const textLayer__height = ImageUtils.cvt__mm_px(240, dpi);
+  static async getLayerBuffer__text(buffer, { text, dpi = 72, bleed__mm = 0 }) {
+    const textField__width = ImageUtils.cvt__mm_px(120, dpi);
+    const textField__height = ImageUtils.cvt__mm_px(240, dpi);
 
-    const textLayer = await sharp({
+    const {
+      buffer: textLayer__buffer,
+      width: textLayer__width,
+      height: textLayer__height,
+    } = await sharp({
       text: {
-        text,
+        // text,
+        text: `<span foreground="#151515">${text}</span>`,
         channels: 3,
         // font: "RobotoCondensed",
         // fontfile: path__font,
-        font: "Roboto",
+        font: "Roboto bold",
         align: "center",
-        width: textLayer__width,
-        height: textLayer__height,
+        width: textField__width,
+        height: textField__height,
         rgba: true,
       },
     })
@@ -145,109 +149,27 @@ export default class ImageContoller {
         };
       });
 
-    return textLayer;
-  }
-
-  static async getImageBuffer__color({ color, dpi = 72, bleed__mm = 0 }) {
-    const image__path = ImageUtils.getImagePath(dpi, bleed__mm);
-
-    const image__width = await ImageUtils.getWidth(image__path);
-    const image__height = await ImageUtils.getHeight(image__path);
-
-    const blendLayer = await this.createBlendLayer({
-      image__width,
-      image__height,
-      color,
-    });
-
-    const buffer = await sharp(image__path)
-      .composite([
-        {
-          input: blendLayer,
-          gravity: "southwest",
-          blend: "colour-dodge",
-        },
-      ])
-      .png()
-      .toBuffer();
-
-    return buffer;
-  }
-
-  static async createTextLayer({
-    image__width,
-    image__height,
-    text,
-    dpi = 72,
-    bleed__mm = 5,
-  }) {
-    const path__font = "RobotoCondensed-VariableFont_wght.ttf";
-  }
-
-  static async _getLayerBuffer__text(text, username) {
-    const image__path = path.dpi__72;
-    const dpi = 72;
-
-    const image__width = await ImageUtils.getWidth(image__path);
-    const image__height = await ImageUtils.getHeight(image__path);
-
-    const textLayer__positionLeft_center = ImageUtils.cvt__mm_px(88, dpi);
-    const textLayer__positionTop_center = ImageUtils.cvt__mm_px(300, dpi);
-
-    const {
+    const textLayer = new Layer({
       buffer: textLayer__buffer,
       width: textLayer__width,
       height: textLayer__height,
-    } = await this.createTextLayer({
-      image__width,
-      image__height,
-      text,
-      username,
+      top_center__mm: 300,
+      left_center__mm: 88,
+      dpi,
     });
 
-    const textLayer__positionLeft_LT = ImageUtils.number__fixed(
-      textLayer__positionLeft_center - textLayer__width / 2
-    );
-    const textLayer__positionTop_LT = ImageUtils.number__fixed(
-      textLayer__positionTop_center - textLayer__height / 2
-    );
-
-    const {
-      buffer: autographLayer__buffer,
-      width: autographLayer__width,
-      height: autographLayer__height,
-    } = await this.createAutographLayer({
-      username,
-    });
-
-    const autographLayer__positionLeft_LT = ImageUtils.number__fixed(
-      autographLayer__positionLeft_center - autographLayer__width / 2
-    );
-    const autographLayer__positionTop_LT = ImageUtils.number__fixed(
-      autographLayer__positionTop_center - autographLayer__height / 2
-    );
-
-    const buffer = await sharp(image__path)
-      .composite([
-        {
-          input: textLayer__buffer,
-          left: textLayer__positionLeft_LT,
-          top: textLayer__positionTop_LT,
-        },
-        {
-          input: autographLayer__buffer,
-          left: autographLayer__positionLeft_LT,
-          top: autographLayer__positionTop_LT,
-        },
-      ])
-      .webp()
-      .toBuffer();
-
-    return buffer;
+    return {
+      input: textLayer.buffer,
+      left: textLayer.left,
+      top: textLayer.top,
+    };
   }
 
-  // static async getPreview__color(color) {
-  //   const image__path = path.dpi__72;
+  // static async getLayerBuffer__color(
+  //   buffer,
+  //   { color, dpi = 72, bleed__mm = 0 }
+  // ) {
+  //   const image__path = ImageUtils.getImagePath(dpi, bleed__mm);
   //
   //   const image__width = await ImageUtils.getWidth(image__path);
   //   const image__height = await ImageUtils.getHeight(image__path);
@@ -266,7 +188,7 @@ export default class ImageContoller {
   //         blend: "colour-dodge",
   //       },
   //     ])
-  //     .webp()
+  //     .png()
   //     .toBuffer();
   //
   //   return buffer;

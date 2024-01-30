@@ -58,8 +58,8 @@ bot.on("message", async (ctx) => {
     // TODO Сохранить в информацию в память сессии
     await ctx.replyWithMarkdownV2(`\`${message__text}\``);
 
-    console.log(message__text);
     ctx.session.text = message__text;
+    console.log(ctx.session);
 
     await ctx.replyWithPhoto({
       source: await ImageContoller.getPreview(username, ctx.session),
