@@ -42,11 +42,12 @@ bot.on("message", async (ctx) => {
   } else {
     // TODO Сохранить в информацию в память сессии
     await ctx.replyWithMarkdownV2(`\`${message__text}\``);
+    let username = ctx.message.from.username;
+    if (!username) username = ctx.message.id;
 
     await ctx.replyWithPhoto({
-      source: await ImageContoller.getPreview__text(message__text),
+      source: await ImageContoller.getPreview__text(message__text, username),
     });
-    await ctx.reply("message");
   }
 });
 
