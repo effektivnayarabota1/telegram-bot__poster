@@ -6,19 +6,21 @@ import ImageUtils from "./image.controller.utils";
 const path__font = "RobotoCondensed-VariableFont_wght.ttf";
 
 export default class ImageContoller {
-  static async renderImage({ username, color, text, dpi }) {
-    const layer__background = await this.getImage({ dpi });
+  static async renderImage({ username, color, text, dpi, bleed__mm }) {
+    const layer__background = await this.getImage({ dpi, bleed__mm });
     const layer__color = await this.getLayerBuffer__color(layer__background, {
       color,
       dpi,
+      bleed__mm,
     });
     const layer__text = await this.getLayerBuffer__text(layer__background, {
       text,
       dpi,
+      bleed__mm,
     });
     const layer__autograph = await this.getLayerBuffer__autograph(
       layer__background,
-      { username, dpi }
+      { username, dpi, bleed__mm }
     );
 
     return sharp(layer__background).composite([
@@ -34,11 +36,29 @@ export default class ImageContoller {
       .toBuffer();
   }
 
-  static async getRender_wallpaper({
+  static async getRender__print({
     username,
     color = "#FF7F50",
     text = "(^=◕ᴥ◕=^)",
   }) {
+    const buffer = await this.renderImage({
+      username,
+      color,
+      text,
+      dpi: 300,
+      bleed__mm: 5,
+    });
+
+    const buffer__png = await buffer.png().toBuffer();
+
+    return await sharp(buffer__png).png().toBuffer();
+    // return await buffer.resize(200, 300).png().toBuffer();
+  }
+
+  static async getRender__wallpaper(
+    { username, color = "#FF7F50", text = "(^=◕ᴥ◕=^)" },
+    width__new = 600
+  ) {
     const buffer = await this.renderImage({
       username,
       color,
@@ -50,14 +70,13 @@ export default class ImageContoller {
 
     const { width, height } = await ImageUtils.getMetadata(buffer__png);
 
-    const width__new = 800;
     const ratio = width / width__new;
     const height__new = height / ratio;
 
     const top = ImageUtils.number__fixed(((3000 - height__new) / 3) * 2);
     const right = ImageUtils.number__fixed(((1400 - width__new) / 3) * 2);
-    const bottom = 3000 - top;
-    const left = 1400 - right;
+    const bottom = ImageUtils.number__fixed(3000 - height__new - top);
+    const left = ImageUtils.number__fixed(1400 - width__new - right);
 
     return await sharp(buffer__png)
       .resize({ width: width__new, fit: "inside" })
@@ -86,8 +105,8 @@ export default class ImageContoller {
     const colorLayer = {};
     colorLayer.buffer = await sharp({
       create: {
-        width: image__width + bleed__px - padding__px,
-        height: image__height + bleed__px - padding__px,
+        width: image__width - padding__px,
+        height: image__height - padding__px,
         channels: 3,
         background: color,
       },
@@ -149,6 +168,7 @@ export default class ImageContoller {
       top_center__mm: 72,
       left_center__mm: 54,
       dpi,
+      bleed__mm,
     });
 
     return {
@@ -169,12 +189,11 @@ export default class ImageContoller {
     } = await sharp({
       text: {
         // text,
-        // text: `<span foreground="#151515">${text}</span>`,
         text: `<span foreground="#525252">${text}</span>`,
         channels: 3,
-        // font: "RobotoCondensed",
         // fontfile: path__font,
-        font: "Roboto bold",
+        // font: "Roboto bold",
+        font: "RobotoCondensed bold",
         align: "center",
         width: textField__width,
         height: textField__height,
@@ -200,6 +219,7 @@ export default class ImageContoller {
       top_center__mm: 300,
       left_center__mm: 88,
       dpi,
+      bleed__mm,
     });
 
     return {

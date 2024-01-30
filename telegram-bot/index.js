@@ -19,7 +19,7 @@ bot.start(async (ctx) => {
     {
       caption: "Окей, эту графику мы будем красить.",
       ...Markup.keyboard([
-        ["EMOJI (´｡• ᵕ •｡`)"],
+        // ["EMOJI (´｡• ᵕ •｡`)"],
         [Markup.button.webApp("♦ Изменить цвет", process.env.WEB_APP_URL)],
         ["♨ Render!"],
       ]),
@@ -34,10 +34,19 @@ bot.hears("♨ Render!", async (ctx) => {
   if (!username) username = ctx.message.id;
   ctx.session.username = username;
 
-  console.log(ctx.session);
+  await ctx.replyWithDocument({
+    source: await ImageContoller.getRender__print(ctx.session),
+    filename: "flower__print_a3__bledd_5mm.png",
+  });
 
-  await ctx.replyWithPhoto({
-    source: await ImageContoller.getRender_wallpaper(ctx.session),
+  await ctx.replyWithDocument({
+    source: await ImageContoller.getRender__wallpaper(ctx.session),
+    filename: "flower__wallpaper_1400x3000.png",
+  });
+
+  await ctx.replyWithDocument({
+    source: await ImageContoller.getRender__wallpaper(ctx.session, 256),
+    filename: "flower__wallpaper_1400x3000.png",
   });
 });
 
@@ -52,35 +61,20 @@ bot.on("message", async (ctx) => {
   ctx.session.username = username;
 
   if (ctx.webAppData || regex.test(message__text)) {
-    // TODO Сохранить в информацию в память сессии
-    let hex;
-
-    if (ctx.webAppData?.data) hex = ctx.webAppData.data.text();
-    else hex = message__text.match(regex)[0];
-
-    ctx.session.color = hex;
-
-    console.log(ctx.session);
-
-    await ctx.replyWithMarkdownV2(`\`${hex}\``);
-
-    await ctx.replyWithPhoto({
-      source: await ImageContoller.getPreview(ctx.session),
-    });
+    if (ctx.webAppData?.data) ctx.session.color = ctx.webAppData.data.text();
+    else ctx.session.color = message__text.match(regex)[0];
+    await ctx.replyWithMarkdownV2(`\`${ctx.session.color}\``);
   } else {
-    // TODO Сохранить в информацию в память сессии
     await ctx.replyWithMarkdownV2(`\`${message__text}\``);
-
     ctx.session.text = message__text;
-    console.log(ctx.session);
+  }
 
-    await ctx.replyWithPhoto({
+  try {
+    return await ctx.replyWithPhoto({
       source: await ImageContoller.getPreview(ctx.session),
     });
-
-    // await ctx.replyWithPhoto({
-    //   source: await ImageContoller.getPreview__text(message__text, username),
-    // });
+  } catch (e) {
+    return await ctx.reply(e.message);
   }
 });
 
