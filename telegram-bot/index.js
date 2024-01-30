@@ -27,6 +27,20 @@ bot.start(async (ctx) => {
   );
 });
 
+bot.hears("♨ Render!", async (ctx) => {
+  if (!ctx.session) ctx.session = {};
+
+  let username = ctx.message.from.username;
+  if (!username) username = ctx.message.id;
+  ctx.session.username = username;
+
+  console.log(ctx.session);
+
+  await ctx.replyWithPhoto({
+    source: await ImageContoller.getRender_wallpaper(ctx.session),
+  });
+});
+
 bot.on("message", async (ctx) => {
   if (!ctx.session) ctx.session = {};
 
@@ -35,6 +49,7 @@ bot.on("message", async (ctx) => {
 
   let username = ctx.message.from.username;
   if (!username) username = ctx.message.id;
+  ctx.session.username = username;
 
   if (ctx.webAppData || regex.test(message__text)) {
     // TODO Сохранить в информацию в память сессии
@@ -45,15 +60,13 @@ bot.on("message", async (ctx) => {
 
     ctx.session.color = hex;
 
+    console.log(ctx.session);
+
     await ctx.replyWithMarkdownV2(`\`${hex}\``);
 
     await ctx.replyWithPhoto({
-      source: await ImageContoller.getPreview(username, ctx.session),
+      source: await ImageContoller.getPreview(ctx.session),
     });
-
-    // await ctx.replyWithPhoto({
-    //   source: await ImageContoller.getPreview__color(hex),
-    // });
   } else {
     // TODO Сохранить в информацию в память сессии
     await ctx.replyWithMarkdownV2(`\`${message__text}\``);
@@ -62,7 +75,7 @@ bot.on("message", async (ctx) => {
     console.log(ctx.session);
 
     await ctx.replyWithPhoto({
-      source: await ImageContoller.getPreview(username, ctx.session),
+      source: await ImageContoller.getPreview(ctx.session),
     });
 
     // await ctx.replyWithPhoto({
