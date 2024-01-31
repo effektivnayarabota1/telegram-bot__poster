@@ -3,7 +3,8 @@ import sharp from "sharp";
 import Layer from "./layer.controller.utils";
 import ImageUtils from "./image.controller.utils";
 
-const path__font = "RobotoCondensed-VariableFont_wght.ttf";
+const path__font_robotoCondensed = "RobotoCondensed-VariableFont_wght.ttf";
+const path__font_roboto = "Roboto-Bold.ttf";
 
 export default class ImageContoller {
   static async renderImage({ username, color, text, dpi, bleed__mm }) {
@@ -143,7 +144,7 @@ export default class ImageContoller {
         text: `<span foreground="#a3a3a3">${text}</span>`,
         channels: 3,
         font: "RobotoCondensed light italic",
-        fontfile: path__font,
+        fontfile: path__font_robotoCondensed,
         align: "left",
         dpi: dpi * (108 / 72),
         rgba: true,
@@ -189,6 +190,7 @@ export default class ImageContoller {
       text: `<span foreground="#2c2c2c">${text}</span>`,
       channels: 3,
       font: "Roboto bold",
+      fontfile: path__font_roboto,
       align: "left",
       width: ImageUtils.cvt__mm_px(128, dpi),
       dpi: dpi * (360 / 72),
