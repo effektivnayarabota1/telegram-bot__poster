@@ -182,23 +182,30 @@ export default class ImageContoller {
     const textField__width = ImageUtils.cvt__mm_px(120, dpi);
     const textField__height = ImageUtils.cvt__mm_px(240, dpi);
 
+    let text__options = {
+      // text,
+      text: `<span foreground="#525252">${text}</span>`,
+      channels: 3,
+      font: "Roboto bold",
+      align: "center",
+      dpi: dpi * (480 / 72),
+      rgba: true,
+    };
+
+    const text__strings = text.split("\n");
+
+    if (text__strings.length > 2) {
+      delete text__options.dpi;
+      text__options.width = textField__width;
+      text__options.height = textField__height;
+    }
+
     const {
       buffer: textLayer__buffer,
       width: textLayer__width,
       height: textLayer__height,
     } = await sharp({
-      text: {
-        // text,
-        text: `<span foreground="#525252">${text}</span>`,
-        channels: 3,
-        // fontfile: path__font,
-        // font: "Roboto bold",
-        font: "RobotoCondensed bold",
-        align: "center",
-        width: textField__width,
-        height: textField__height,
-        rgba: true,
-      },
+      text: text__options,
     })
       .png()
       .rotate(30, { background: "#ffffff00" })
@@ -216,8 +223,8 @@ export default class ImageContoller {
       buffer: textLayer__buffer,
       width: textLayer__width,
       height: textLayer__height,
-      top_center__mm: 300,
-      left_center__mm: 88,
+      top_center__mm: 304,
+      left_center__mm: 80,
       dpi,
       bleed__mm,
     });
