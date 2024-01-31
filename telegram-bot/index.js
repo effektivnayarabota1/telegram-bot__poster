@@ -62,17 +62,68 @@ const bot__buttonText_randomColor = "RANDOM COLOR";
 const bot__buttonText_randomEmoji = "RANDOM (´｡• ᵕ •｡`)";
 const bot__buttonText_randomFull = "FULL RANDOM!";
 
+bot.help(async (ctx) => {
+  const message = await template("command__start-2");
+  ctx.reply(message);
+});
+
 bot.start(async (ctx) => {
   await context__checkSessionData(ctx);
 
   const message1 = await template("command__start-1");
-  await ctx.reply(message1);
+  await ctx.replyWithMarkdown(message1);
+
+  await ctx.sendMediaGroup([
+    {
+      media: { source: "./static/previews/preview__1" },
+      type: "photo",
+    },
+    {
+      media: { source: "./static/previews/preview__2" },
+      type: "photo",
+    },
+    {
+      media: { source: "./static/previews/preview__3" },
+      type: "photo",
+    },
+    {
+      media: { source: "./static/previews/preview__4" },
+      type: "photo",
+    },
+    {
+      media: { source: "./static/previews/preview__5" },
+      type: "photo",
+    },
+    {
+      media: { source: "./static/previews/preview__6" },
+      type: "photo",
+    },
+    {
+      media: { source: "./static/previews/preview__7" },
+      type: "photo",
+    },
+    {
+      media: { source: "./static/previews/preview__8" },
+      type: "photo",
+    },
+    {
+      media: { source: "./static/previews/preview__9" },
+      type: "photo",
+    },
+    {
+      media: { source: "./static/previews/preview__10" },
+      type: "photo",
+    },
+  ]);
+
+  const message2 = await template("command__start-2");
+
   await ctx.replyWithPhoto(
     {
       source: "./static/lepestochek__72dpi.png",
     },
     {
-      caption: "Окей, эту графику мы будем красить.",
+      caption: message2,
       ...Markup.keyboard([
         [bot__buttonText_randomEmoji, bot__buttonText_randomColor],
         [bot__buttonText_randomFull],
@@ -116,25 +167,36 @@ bot.hears(bot__buttonText_randomColor, async (ctx) => {
 bot.hears("♨ Render!", async (ctx) => {
   await reply__context(ctx);
 
-  await ctx.replyWithDocument({
-    source: await ImageContoller.getRender__print(ctx.session),
-    filename: "flower__print_a3__bledd_5mm.png",
-  });
-
-  await ctx.replyWithDocument({
-    source: await ImageContoller.getRender__wallpaper(ctx.session),
-    filename: "flower__wallpaper_1400x3000__600.png",
-  });
-
-  await ctx.replyWithDocument({
-    source: await ImageContoller.getRender__wallpaper(ctx.session, 256),
-    filename: "flower__wallpaper_1400x3000__256.png",
-  });
-
-  await ctx.replyWithDocument({
-    source: await ImageContoller.getRender__wallpaper(ctx.session, 64),
-    filename: "flower__wallpaper_1400x3000__64.png",
-  });
+  await ctx.sendMediaGroup([
+    {
+      media: {
+        source: await ImageContoller.getRender__print(ctx.session),
+        filename: "flower__print_a3__bledd_5mm.png",
+      },
+      type: "document",
+    },
+    {
+      media: {
+        source: await ImageContoller.getRender__wallpaper(ctx.session),
+        filename: "flower__wallpaper_1400x3000__600.png",
+      },
+      type: "document",
+    },
+    {
+      media: {
+        source: await ImageContoller.getRender__wallpaper(ctx.session, 256),
+        filename: "flower__wallpaper_1400x3000__256.png",
+      },
+      type: "document",
+    },
+    {
+      media: {
+        source: await ImageContoller.getRender__wallpaper(ctx.session, 64),
+        filename: "flower__wallpaper_1400x3000__64.png",
+      },
+      type: "document",
+    },
+  ]);
 
   ctx.session = {};
 
@@ -168,9 +230,4 @@ bot.on("message", async (ctx) => {
     ctx.session.text__set = true;
   }
   return await preview__render(ctx);
-});
-
-bot.help(async (ctx) => {
-  const message = await template("command__help");
-  ctx.reply(message);
 });
