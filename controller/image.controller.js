@@ -30,7 +30,7 @@ export default class ImageContoller {
     ]);
   }
 
-  static async getPreview({ username, color = "#FF7F50", text = "(^=◕ᴥ◕=^)" }) {
+  static async getPreview({ username, color = "#FF0000", text = "(^=◕ᴥ◕=^)" }) {
     return (await this.renderImage({ username, color, text }))
       .webp()
       .toBuffer();
@@ -179,25 +179,32 @@ export default class ImageContoller {
   }
 
   static async getLayerBuffer__text(buffer, { text, dpi = 72, bleed__mm = 0 }) {
-    const textField__width = ImageUtils.cvt__mm_px(120, dpi);
-    const textField__height = ImageUtils.cvt__mm_px(240, dpi);
+    const textField__width = ImageUtils.cvt__mm_px(128, dpi);
+    const textField__height = ImageUtils.cvt__mm_px(128, dpi);
+
+    let rotate__deg = 30;
 
     let text__options = {
       // text,
-      text: `<span foreground="#525252">${text}</span>`,
+      text: `<span foreground="#2c2c2c">${text}</span>`,
       channels: 3,
       font: "Roboto bold",
-      align: "center",
-      dpi: dpi * (480 / 72),
+      align: "left",
+      width: ImageUtils.cvt__mm_px(128, dpi),
+      dpi: dpi * (360 / 72),
       rgba: true,
     };
 
     const text__strings = text.split("\n");
-
     if (text__strings.length > 2) {
       delete text__options.dpi;
+      rotate__deg = 0;
+
       text__options.width = textField__width;
       text__options.height = textField__height;
+      text__options.align = "left";
+      // text__options.justify = true;
+      // text__options.spacing = 0;
     }
 
     const {
@@ -208,7 +215,7 @@ export default class ImageContoller {
       text: text__options,
     })
       .png()
-      .rotate(30, { background: "#ffffff00" })
+      .rotate(rotate__deg, { background: "#ffffff00" })
       .toBuffer()
       .then(async function (buffer) {
         const { width, height } = await ImageUtils.getMetadata(buffer);
