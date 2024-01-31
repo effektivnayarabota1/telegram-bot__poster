@@ -177,8 +177,11 @@ export default class ImageContoller {
   }
 
   static async getLayerBuffer__text(buffer, { text, dpi = 72, bleed__mm = 0 }) {
-    const textField__width = ImageUtils.cvt__mm_px(128, dpi);
-    const textField__height = ImageUtils.cvt__mm_px(128, dpi);
+    // const textField__width = ImageUtils.cvt__mm_px(128, dpi);
+    // const textField__height = ImageUtils.cvt__mm_px(128, dpi);
+	  
+    const textField__width = ImageUtils.cvt__mm_px(96, dpi);
+    const textField__height = ImageUtils.cvt__mm_px(96, dpi);
 
     let rotate__deg = 30;
 
