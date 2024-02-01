@@ -8,6 +8,17 @@ import template from "../telegram-bot__template-messages";
 export const bot = new Telegraf(process.env.BOT_TOKEN);
 bot.use(session());
 
+bot.telegram.setMyCommands([
+  {
+    command: "start",
+    description: "Запуск, рестарт",
+  },
+  {
+    command: "help",
+    description: "Небольшие доки",
+  },
+]);
+
 const context__checkSessionData = async (ctx) => {
   if (!ctx.session) ctx.session = {};
   let username = ctx.message.from.username;
@@ -63,7 +74,7 @@ const bot__buttonText_randomEmoji = "RANDOM (´｡• ᵕ •｡`)";
 const bot__buttonText_randomFull = "FULL RANDOM!";
 
 bot.help(async (ctx) => {
-  const message = await template("command__start-2");
+  const message = await template("command__help");
   ctx.reply(message);
 });
 
@@ -116,7 +127,7 @@ bot.start(async (ctx) => {
     },
   ]);
 
-  const message2 = await template("command__start-2");
+  const message2 = await template("command__help");
 
   await ctx.replyWithPhoto(
     {
